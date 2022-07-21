@@ -13,9 +13,6 @@ import evaluate
 
 ```{r test-python, engine='python'}
 model=torchvision.models.regnet_y_32gf()
-weights=torch.load('/work/baskarg/iNaturalist/visions/op/train_swag_ai/model_49.pth',map_location=torch.device('cpu'))['model']
-model.fc=torch.nn.Linear(3712,142)
-model.load_state_dict(weights,strict=True)
 ```
 
 ## Loading weights of the model
