@@ -7,6 +7,7 @@ You are required to load the following libraries to load the classifier model
 import torch
 import torchvision
 import evaluate
+import cv2
 ```
 
 ## Creating the classifier model
@@ -30,7 +31,7 @@ model.eval()
 
 ```{r test-python, engine='python'}
 image=cv2.imread(PATH_TO_IMAGE)
-result=evaluate(model,image)
+result=evaluate.evaluate(model,image)
 print(result)          
 ```
 
