@@ -2,7 +2,6 @@
 
 ## Loading libraries
 
-You are required to load the following libraries to load the classifier model
 ```{r test-python, engine='python'}
 import torch
 import torchvision
@@ -34,5 +33,3 @@ image=cv2.imread(PATH_TO_IMAGE)
 result=evaluate.evaluate(model,image)
 print(result)          
 ```
-
-
