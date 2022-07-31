@@ -18,7 +18,7 @@ model=torchvision.models.regnet_y_32gf()
 ## Loading weights of the model
 
 ```{r test-python, engine='python'}
-weights=torch.load(PATH_TO_PTH_FILE+'/model.pth',map_location=torch.device('cpu'))['model']
+weights=torch.load(PATH_TO_PTH_FILE+'/model.pth',map_location=torch.device('cpu'))
 model.fc=torch.nn.Linear(3712,142)
 model.load_state_dict(weights,strict=True)
 torch.backends.cudnn.benchmark = False
