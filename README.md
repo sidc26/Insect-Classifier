@@ -30,6 +30,7 @@ model.eval()
 
 ```{r test-python, engine='python'}
 image=cv2.imread(PATH_TO_IMAGE)
+image=cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
 result=evaluate.evaluate(model,image)
 print(result)          
 ```
