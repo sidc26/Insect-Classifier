@@ -31,6 +31,12 @@ def evaluate(model,image):
             image = image.to(device, non_blocking=True)
             output = model(image)
             op = torch.nn.functional.softmax(output)
-            op= torch.argmax(op)
+            op_ix= torch.argmax(op)
+            if(op[0][op_ix]>=0.97):
+                
+                return classes[op_ix]
+            else:
+                return 'Maybe OOD '+classes[op_ix]
+            
             return classes[op] 
 
