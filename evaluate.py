@@ -36,7 +36,7 @@ def evaluate(model,image):
                 
                 return classes[op_ix]
             else:
-                return 'Maybe OOD '+classes[op_ix]
+                return 'Maybe OOD with uncertainty of '+str(1-op[0][op_ix])+' '+classes[op_ix]
             
             return classes[op] 
 
