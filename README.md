@@ -1,5 +1,6 @@
 # Insect-Classifier
-
+Packages and versions requirements:  Python 3.8 (minimum),  torch (1.12.1+cu113) and torchvision (0.13.1+cu113) which can be downloaded at https://pytorch.org/get-started/previous-versions/
+This tutorial guides you on how to load the pretrained insect classifier weights and use it for evaluation on a GPU. 
 ## Loading libraries
 
 ```{r test-python, engine='python'}
@@ -19,7 +20,7 @@ model=torchvision.models.regnet_y_32gf()
 
 ```{r test-python, engine='python'}
 weights=torch.load(PATH_TO_PTH_FILE+'/model.pth',map_location=torch.device('cpu'))
-model.fc=torch.nn.Linear(3712,142)
+model.fc=torch.nn.Linear(3712,2526)
 model.load_state_dict(weights,strict=True)
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
