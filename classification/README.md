@@ -1,5 +1,5 @@
 # Image classification reference training scripts
-
+The code for the classification was adapted from: TorchVision maintainers and contributors. (2016). TorchVision: PyTorch's Computer Vision library [Computer software]. https://github.com/pytorch/vision 
 This folder contains reference training scripts for image classification.
 They serve as a log of how to train specific models, as provide baseline
 training and evaluation scripts to quickly bootstrap research.
