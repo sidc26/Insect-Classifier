@@ -2,7 +2,7 @@
 Packages and versions requirements:  Python 3.8 (minimum),  torch and torchvision can be downloaded at https://pytorch.org/get-started/previous-versions/
 
 
-This tutorial guides you on how to load the pretrained insect classifier weights and use it for evaluation on a GPU. 
+This tutorial guides you on how to load the pretrained insect classifier weights and use it for evaluation. The weights for the classifier are available [here: ](https://zenodo.org/records/14538000?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6ImRmYTc1MDk0LTJlNzYtNDlkYy1iNDZhLWI0NmU4Mzc3OWVhZiIsImRhdGEiOnt9LCJyYW5kb20iOiI2OGQxMDU4OWU2NDgxMjhiNGUxMTFhMDU4YTdiZTBkNiJ9.E3b6rnplZkUWSjta0whBI3_r8y1jixMa5JatyAcAPfJPX-NXaaqV-7ckeEQfOpDFvkQ7XoDHIyWvCUVkED-rng) 
 ## Loading libraries
 
 ```{r test-python, engine='python'}
