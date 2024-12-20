@@ -1,4 +1,9 @@
 from torchvision.transforms.functional import InterpolationMode
+from torchvision import transforms
+import torch
+from PIL import Image
+import pandas as pd
+import numpy as np
 def transforms_validation(image):
     crop_size=224
     resize_size=256
@@ -18,25 +23,17 @@ def transforms_validation(image):
 
 def evaluate(model,image):
     model.eval()
-    device=torch.device('cpu')
+    device= torch.device('cpu')
     image=transforms_validation(image)
-    file=open('classes.txt','r')
-    classes=[]
-    content=file.readlines()
-    for i in content:
-        spl=i.split('\n')[0]
-        classes.append(spl)
-    
+    df=pd.read_csv('classes.csv')
+    scientific_name=list(df['genus']+' '+df['species'])
+    role=list(df['Role in Ecosystem'])
     with torch.inference_mode():
             image = image.to(device, non_blocking=True)
             output = model(image)
             op = torch.nn.functional.softmax(output)
             op_ix= torch.argmax(op)
             if(op[0][op_ix]>=0.97):
-                
-                return classes[op_ix]
+                return 'Scientific Name: '+scientific_name[op_ix]+'\nRole in Ecosystem: '+role[op_ix]
             else:
-                return 'Maybe OOD with uncertainty of '+str(1-op[0][op_ix])+' '+classes[op_ix]
-            
-            return classes[op] 
-
+                return 'Maybe OOD. '+ '\nScientific Name: '+scientific_name[op_ix]+' \nRole in Ecosystem: '+role[op_ix]
