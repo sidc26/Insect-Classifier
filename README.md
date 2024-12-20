@@ -1,5 +1,5 @@
 # Insect-Classifier
-Packages and versions requirements:  Python 3.8 (minimum),  torch (1.12.1+cu113) and torchvision (0.13.1+cu113) which can be downloaded at https://pytorch.org/get-started/previous-versions/
+Packages and versions requirements:  Python 3.8 (minimum),  torch and torchvision can be downloaded at https://pytorch.org/get-started/previous-versions/
 
 
 This tutorial guides you on how to load the pretrained insect classifier weights and use it for evaluation on a GPU. 
