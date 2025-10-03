@@ -1,0 +1,25 @@
+[project]
+name = "insect-classifier"
+version = "0.1.0"
+description = "Deep learning powered insect classifier"
+authors = [
+    {name = "sidc26", email = "162922611+sidc26@users.noreply.github.com"}
+]
+readme = "README.md"
+requires-python = ">=3.9,<3.12"
+
+dependencies = [
+    "torch==2.2.0",
+    "torchvision==0.17.0",
+    "opencv-python==4.9.0.80",
+    "pandas==2.2.2",
+    "ipykernel==6.29.0",
+    "numpy (<2)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
