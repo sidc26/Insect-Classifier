@@ -31,8 +31,9 @@ def evaluate(model,image):
     with torch.inference_mode():
             image = image.to(device, non_blocking=True)
             output = model(image)
-            op = torch.nn.functional.softmax(output)
+            op = torch.nn.functional.softmax(output, dim=1)
             op_ix= torch.argmax(op)
+            
             if(op[0][op_ix]>=0.97):
                 return 'Scientific Name: '+scientific_name[op_ix]+'\nRole in Ecosystem: '+role[op_ix]
             else:

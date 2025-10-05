@@ -32,7 +32,7 @@ model.eval()
 # -----------------------------
 # 4. Load test image
 # -----------------------------
-img_path = r"C:\Users\rvc60\Insect-Classifier\image.png"
+img_path = r"C:\Users\rvc60\Insect-Classifier\OSK.jpg"
 image = cv2.imread(img_path)
 if image is None:
     raise FileNotFoundError(f"Could not load image at {img_path}")
