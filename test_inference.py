@@ -1,47 +1,95 @@
 import torch
 import torchvision
 import cv2
-from evaluate import evaluate
+import pandas as pd
+from torchvision import transforms
+from torchvision.transforms.functional import InterpolationMode
+from PIL import Image
+import numpy as np
+import os
 
 # -----------------------------
-# 1. Build the model
+# 1. Build model
 # -----------------------------
-model = torchvision.models.regnet_y_32gf(weights=None)  # no pretrained weights
-model.fc = torch.nn.Linear(3712, 2526)  # match checkpoint output
+# The checkpoint was actually trained with regnet_y_32gf (based on state dict keys)
+model = torchvision.models.regnet_y_32gf(weights=None)
+model.fc = torch.nn.Linear(3712, 2526)
+device = torch.device("cpu")
+model.to(device)
 
 # -----------------------------
 # 2. Load checkpoint
 # -----------------------------
 ckpt_path = r"C:\Users\rvc60\Insect-Classifier\weights\model.pth"
-checkpoint = torch.load(ckpt_path, map_location="cpu")
+print(f"Loading checkpoint from: {ckpt_path}")
+ckpt = torch.load(ckpt_path, map_location="cpu")
 
-# Extract only the model weights (ignore optimizer, lr_scheduler, etc.)
-state_dict = checkpoint["model"] if "model" in checkpoint else checkpoint
-missing, unexpected = model.load_state_dict(state_dict, strict=False)
+state_dict = ckpt["model"]  # only model available
+state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
+model.load_state_dict(state_dict, strict=True)
 
-print(f"⚠️ Missing keys: {missing}")
-print(f"⚠️ Unexpected keys: {unexpected}")
+# Disable BatchNorm running stats for stable inference
+for m in model.modules():
+    if isinstance(m, torch.nn.BatchNorm2d):
+        m.track_running_stats = False
 
-# -----------------------------
-# 3. Eval settings
-# -----------------------------
+model.eval()
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
-model.eval()
+
+# Additional debugging info
+print(f"Model device: {next(model.parameters()).device}")
+print(f"Model dtype: {next(model.parameters()).dtype}")
+print(f"Model in eval mode: {not model.training}")
 
 # -----------------------------
-# 4. Load test image
+# 3. Image preprocessing
+# -----------------------------
+def preprocess_image(image):
+    # Match exactly the ClassificationPresetEval used in training
+    transform = transforms.Compose([
+        transforms.Resize(256, interpolation=InterpolationMode.BILINEAR, antialias=True),  # Added antialias=True
+        transforms.CenterCrop(224),
+        transforms.PILToTensor(),
+        transforms.ConvertImageDtype(torch.float),
+        transforms.Normalize(mean=(0.485, 0.456, 0.406),
+                             std=(0.229, 0.224, 0.225)),
+    ])
+    image = Image.fromarray(np.uint8(image))
+    return transform(image).unsqueeze(0)
+
+# -----------------------------
+# 4. Load and run inference
 # -----------------------------
 img_path = r"C:\Users\rvc60\Insect-Classifier\OSK.jpg"
-image = cv2.imread(img_path)
-if image is None:
-    raise FileNotFoundError(f"Could not load image at {img_path}")
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
+input_tensor = preprocess_image(image).to(device)
+
+with torch.inference_mode():
+    output = model(input_tensor)
+    probs = torch.nn.functional.softmax(output, dim=1)
+    conf, pred = probs.max(dim=1)
+
+confidence = conf.item()
+pred_index = pred.item()
 
 # -----------------------------
-# 5. Run evaluation
+# 5. Map to labels
 # -----------------------------
-result = evaluate(model, image)
+df = pd.read_csv(r"C:\Users\rvc60\Insect-Classifier\classes.csv")
+scientific_names = list(df["genus"] + " " + df["species"])
+roles = list(df["Role in Ecosystem"])
 
 print("\n===== Inference Result =====")
-print(result)
+if confidence < 0.7:
+    print(f"Maybe OOD (confidence {confidence:.2f})")
+print(f"Prediction Index: {pred_index}")
+print(f"Scientific Name: {scientific_names[pred_index]}")
+print(f"Role in Ecosystem: {roles[pred_index]}")
+print(f"Confidence: {confidence:.4f}")
+
+# Show top 5 predictions for debugging
+print(f"\n===== Top 5 Predictions =====")
+top5_probs, top5_indices = probs.topk(5)
+for i, (prob, idx) in enumerate(zip(top5_probs[0], top5_indices[0])):
+    print(f"{i+1}. {scientific_names[idx.item()]} (conf: {prob.item():.4f})")
