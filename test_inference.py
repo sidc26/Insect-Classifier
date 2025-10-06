@@ -46,32 +46,39 @@ print(f"Model in eval mode: {not model.training}")
 # 3. Image preprocessing
 # -----------------------------
 def preprocess_image(image):
-    # Match exactly the ClassificationPresetEval used in training
-    transform = transforms.Compose([
-        transforms.Resize(256, interpolation=InterpolationMode.BILINEAR, antialias=True),  # Added antialias=True
-        transforms.CenterCrop(224),
+    # Match exactly the original evaluate.py transforms_validation function
+    crop_size = 224
+    resize_size = 256
+    mean = (0.485, 0.456, 0.406)
+    std = (0.229, 0.224, 0.225)
+    interpolation = InterpolationMode.BILINEAR
+    transforms_val = transforms.Compose([
+        transforms.Resize(resize_size, interpolation=interpolation),  # No antialias=True in original
+        transforms.CenterCrop(crop_size),
         transforms.PILToTensor(),
         transforms.ConvertImageDtype(torch.float),
-        transforms.Normalize(mean=(0.485, 0.456, 0.406),
-                             std=(0.229, 0.224, 0.225)),
+        transforms.Normalize(mean=mean, std=std)
     ])
     image = Image.fromarray(np.uint8(image))
-    return transform(image).unsqueeze(0)
+    image = transforms_val(image).reshape((1, 3, 224, 224))  # Match original reshaping
+    return image
 
 # -----------------------------
 # 4. Load and run inference
 # -----------------------------
 img_path = r"C:\Users\rvc60\Insect-Classifier\OSK.jpg"
 image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
-input_tensor = preprocess_image(image).to(device)
+input_tensor = preprocess_image(image)  # Don't move to device yet, match original
 
+# Match original evaluate.py inference exactly
 with torch.inference_mode():
+    input_tensor = input_tensor.to(device, non_blocking=True)  # Move to device here like original
     output = model(input_tensor)
-    probs = torch.nn.functional.softmax(output, dim=1)
-    conf, pred = probs.max(dim=1)
-
-confidence = conf.item()
-pred_index = pred.item()
+    op = torch.nn.functional.softmax(output, dim=1)
+    op_ix = torch.argmax(op)  # Use argmax like original
+    
+confidence = op[0][op_ix].item()
+pred_index = op_ix.item()
 
 # -----------------------------
 # 5. Map to labels
@@ -81,15 +88,19 @@ scientific_names = list(df["genus"] + " " + df["species"])
 roles = list(df["Role in Ecosystem"])
 
 print("\n===== Inference Result =====")
-if confidence < 0.7:
-    print(f"Maybe OOD (confidence {confidence:.2f})")
+# Match original evaluate.py confidence threshold (0.97)
+if confidence >= 0.97:
+    print(f"Scientific Name: {scientific_names[pred_index]}")
+    print(f"Role in Ecosystem: {roles[pred_index]}")
+else:
+    print(f"Maybe OOD. Scientific Name: {scientific_names[pred_index]}")
+    print(f"Role in Ecosystem: {roles[pred_index]}")
+
 print(f"Prediction Index: {pred_index}")
-print(f"Scientific Name: {scientific_names[pred_index]}")
-print(f"Role in Ecosystem: {roles[pred_index]}")
 print(f"Confidence: {confidence:.4f}")
 
 # Show top 5 predictions for debugging
 print(f"\n===== Top 5 Predictions =====")
-top5_probs, top5_indices = probs.topk(5)
+top5_probs, top5_indices = op.topk(5)
 for i, (prob, idx) in enumerate(zip(top5_probs[0], top5_indices[0])):
     print(f"{i+1}. {scientific_names[idx.item()]} (conf: {prob.item():.4f})")
