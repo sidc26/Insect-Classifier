@@ -100,7 +100,6 @@ print(f"Prediction Index: {pred_index}")
 print(f"Confidence: {confidence:.4f}")
 
 # Show top 5 predictions for debugging
-print(f"\n===== Top 5 Predictions =====")
-top5_probs, top5_indices = op.topk(5)
-for i, (prob, idx) in enumerate(zip(top5_probs[0], top5_indices[0])):
-    print(f"{i+1}. {scientific_names[idx.item()]} (conf: {prob.item():.4f})")
+print("\n===== Top Prediction =====")
+top_prob, top_idx = op.topk(1)
+print(f"{scientific_names[top_idx.item()]} (conf: {top_prob.item():.4f})")
